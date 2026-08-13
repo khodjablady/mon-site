@@ -1,0 +1,41 @@
+name: Import site to Hugo
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget git pandoc jq apache2-utils
+
+      - name: Install Python deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install beautifulsoup4 markdownify PyYAML requests
+
+      - name: Run import script
+        env:
+          SITE_URL: https://khodja-blady-products.com
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          chmod +x scripts/import_site.sh
+          ./scripts/import_site.sh
